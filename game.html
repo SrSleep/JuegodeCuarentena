@@ -1,85 +1,97 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-    <meta charset="UTF-8">
+  <head>
+    <meta charset="UTF-8" />
     <title>Juego de la Cuarentena</title>
-    <link rel="stylesheet" href="style.css">
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-</head>
-<body>
+    <link rel="stylesheet" href="style.css" />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap"
+      rel="stylesheet"
+    />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <script type="module" src="firebaseconect.js"></script>
+  </head>
+  <body>
     <div id="startScreen" class="screen">
-        <div class="game-title">
-            <h1>Juego de la Cuarentena</h1>
-            <p class="description">¡Recolecta toda la comida que puedas en 60 segundos!</p>
+      <div class="game-title">
+        <h1>Juego de la Cuarentena</h1>
+        <p class="description">
+          ¡Recolecta toda la comida que puedas en 60 segundos!
+        </p>
+      </div>
+      <div class="start-container">
+        <div class="start-left">
+          <div class="game-card">
+            <form id="startForm">
+              <div class="input-group">
+                <label for="username">Nombre del Jugador</label>
+                <input
+                  type="text"
+                  id="username"
+                  placeholder="Ingresa tu nombre"
+                  required
+                />
+              </div>
+              <div class="instructions">
+                <h3>Instrucciones:</h3>
+                <ul>
+                  <li>Usa las flechas del teclado para moverte</li>
+                  <li>Recolecta la comida para ganar puntos</li>
+                  <li>¡Tienes 60 segundos!</li>
+                </ul>
+              </div>
+              <button type="submit" class="start-button">
+                ¡Comenzar Juego!
+              </button>
+            </form>
+          </div>
         </div>
-        <div class="start-container">
-            <div class="start-left">
-                <div class="game-card">
-                    <form id="startForm">
-                        <div class="input-group">
-                            <label for="username">Nombre del Jugador</label>
-                            <input type="text" id="username" placeholder="Ingresa tu nombre" required>
-                        </div>
-                        <div class="instructions">
-                            <h3>Instrucciones:</h3>
-                            <ul>
-                                <li>Usa las flechas del teclado para moverte</li>
-                                <li>Recolecta la comida para ganar puntos</li>
-                                <li>¡Tienes 60 segundos!</li>
-                            </ul>
-                        </div>
-                        <button type="submit" class="start-button">¡Comenzar Juego!</button>
-                    </form>
-                </div>
-            </div>
-            <div class="start-right">
-                <div class="ranking-panel">
-                    <h2>Ranking</h2>
-                    <ul class="ranking-list">
-                        <li><span class="rank">1.</span> <span class="name">María</span> <span class="score">150</span></li>
-                        <li><span class="rank">2.</span> <span class="name">Juan</span> <span class="score">120</span></li>
-                        <li><span class="rank">3.</span> <span class="name">Pedro</span> <span class="score">100</span></li>
-                        <li><span class="rank">4.</span> <span class="name">Ana</span> <span class="score">80</span></li>
-                        <li><span class="rank">5.</span> <span class="name">Luis</span> <span class="score">70</span></li>
-                    </ul>
-                </div>
-            </div>
+        <div class="start-right">
+          <div class="ranking-panel">
+            <h2>Ranking</h2>
+            <ul class="ranking-list">
+              <!-- Lista de ranking vacía, se llenará dinámicamente -->
+            </ul>
+          </div>
         </div>
+      </div>
     </div>
 
-    <div id="countdownScreen" class="screen" style="display: none;">
-        <h1 id="countdown">3</h1>
+    <div id="countdownScreen" class="screen" style="display: none">
+      <h1 id="countdown">3</h1>
     </div>
 
     <div class="game-container">
-        <div class="game-sidebar left">
-            <div id="gameInfoPanel" class="game-info-panel" style="display: none;">
-                <div class="player-info">
-                    <span class="player-name" id="playerNameDisplay"></span>
-                    <span class="score-display">Puntuación: <span id="scoreDisplay">0</span></span>
-                </div>
-                <div class="timer-display" id="timerDisplay"></div>
-            </div>
+      <div class="game-sidebar left">
+        <div id="gameInfoPanel" class="game-info-panel" style="display: none">
+          <div class="player-info">
+            <span class="player-name" id="playerNameDisplay"></span>
+            <span class="score-display"
+              >Puntuación: <span id="scoreDisplay">0</span></span
+            >
+          </div>
+          <div class="timer-display" id="timerDisplay"></div>
         </div>
-        
-        <canvas id="gameCanvas" width="500" height="500" style="display: none;"></canvas>
-        
-        <div class="game-sidebar right">
-            <div id="gameRankingPanel" class="ranking-panel" style="display: none;">
-                <h2>Ranking</h2>
-                <ul class="ranking-list">
-                    <li><span class="rank">1.</span> <span class="name">María</span> <span class="score">150</span></li>
-                    <li><span class="rank">2.</span> <span class="name">Juan</span> <span class="score">120</span></li>
-                    <li><span class="rank">3.</span> <span class="name">Pedro</span> <span class="score">100</span></li>
-                    <li><span class="rank">4.</span> <span class="name">Ana</span> <span class="score">80</span></li>
-                    <li><span class="rank">5.</span> <span class="name">Luis</span> <span class="score">70</span></li>
-                </ul>
-            </div>
+      </div>
+
+      <canvas
+        id="gameCanvas"
+        width="500"
+        height="500"
+        style="display: none"
+      ></canvas>
+
+      <div class="game-sidebar right">
+        <div id="gameRankingPanel" class="ranking-panel" style="display: none">
+          <h2>Ranking</h2>
+          <ul class="ranking-list">
+            <!-- Lista de ranking vacía, se llenará dinámicamente -->
+          </ul>
         </div>
+      </div>
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-    <script src="game.js"></script>
-</body>
+    <script type="module" src="game.js"></script>
+  </body>
 </html>
