@@ -52,6 +52,15 @@ let score = 0;
 let countdown = 0; // Cambiado a 0 inicialmente
 let gameActive = true; // Variable para controlar el estado del juego
 
+// Para controlar las teclas presionadas (movimiento del player)
+const keysPressed = {
+  ArrowUp: false,
+  ArrowDown: false,
+  ArrowLeft: false,
+  ArrowRight: false
+};
+
+
 // Función para verificar si todas las imágenes se han cargado
 function checkImagesLoaded() {
   imagesLoaded++;
@@ -171,26 +180,50 @@ function drawPlayer(ctx) {
   }
 }
 
+
 // Función para mover al jugador
-function movePlayer(event) {
-  switch (event.key) {
-    case "ArrowUp":
-      if (player.y > 30) player.y -= 10;
-      break;
-    case "ArrowDown":
-      if (player.y + player.height < canvas.height) player.y += 10;
-      break;
-    case "ArrowLeft":
-      if (player.x > 0) player.x -= 10;
-      break;
-    case "ArrowRight":
-      if (player.x + player.width < canvas.width) player.x += 10;
-      break;
+function movePlayer() {
+  const speed = 5; // Velocidad de movimiento
+  const margin = -20; // Margen para todos los bordes
+
+  // Movimiento en la dirección vertical (arriba o abajo)
+  if (keysPressed.ArrowUp && player.y - player.headImage.height * 1 > 0) {
+      player.y -= speed; // Mover hacia arriba
+  }
+  if (keysPressed.ArrowDown && player.y + player.height < canvas.height) {
+      player.y += speed; // Mover hacia abajo
+  }
+
+  // Movimiento en la dirección horizontal (izquierda o derecha)
+  if (keysPressed.ArrowLeft && player.x > margin) {
+      player.x -= speed; // Mover hacia la izquierda
+  }
+  
+  if (keysPressed.ArrowRight) {
+      // Medir la distancia entre el borde derecho y el jugador
+      const distanceToRightEdge = canvas.width - (player.x + player.width);
+      
+      // Si la distancia es mayor que el margen, mover al jugador
+      if (distanceToRightEdge > margin) {
+          player.x += speed; // Mover hacia la derecha
+      } else {
+          player.x = canvas.width - player.width - margin; // Ajustar al borde derecho
+      }
   }
 }
 
 // Llamar a movePlayer para que escuche eventos de teclado
-window.addEventListener("keydown", movePlayer);
+window.addEventListener("keydown", (event) => {
+  if (event.key in keysPressed) {
+      keysPressed[event.key] = true;
+  }
+});
+
+window.addEventListener("keyup", (event) => {
+  if (event.key in keysPressed) {
+      keysPressed[event.key] = false;
+  }
+});
 
 // Función para verificar colisiones
 function checkCollision() {
@@ -287,6 +320,9 @@ for (let i = 0; i < 10; i++) {
 // Bucle principal del juego
 function gameLoop() {
   if (gameActive) {
-    principal(); // Llamar al bucle principal
+      updateClock(); // Actualizar el temporizador
+      movePlayer(); // Mover al jugador
+      principal(); // Llamar al bucle principal
   }
 }
+
