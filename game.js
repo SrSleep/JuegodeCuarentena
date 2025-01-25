@@ -104,6 +104,9 @@ function startGame() {
     if (window.gameInterval) {
         clearInterval(window.gameInterval);
     }
+    if (window.clockInterval) {
+        clearInterval(window.clockInterval);
+    }
 
     // Reiniciar variables del juego
     gameActive = true;
@@ -121,6 +124,7 @@ function startGame() {
     if (imagesLoaded === 3) {
         principal();
         window.gameInterval = setInterval(gameLoop, 1000 / 60);
+        window.clockInterval = setInterval(updateClock, 1000); // Actualizar el temporizador cada segundo
     }
 }
 
@@ -209,10 +213,11 @@ function backToStart() {
 
 function updateClock() {
     if (countdown > 0) {
-        countdown -= 1 / 60;
+        countdown -= 1; // Decrementar cada segundo
     } else {
         if (gameActive) {
             gameActive = false;
+            clearInterval(window.clockInterval); // Limpiar el intervalo del temporizador
             Swal.fire({
                 title: '¡Tiempo agotado!',
                 text: `${username}, tu puntuación final es: ${score}`,
@@ -270,7 +275,6 @@ for (let i = 0; i < 10; i++) {
 // Bucle principal del juego
 function gameLoop() {
     if (gameActive) {
-        updateClock(); // Actualizar el temporizador
         principal(); // Llamar al bucle principal
     }
 }
