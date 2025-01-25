@@ -1,12 +1,17 @@
 const canvas = document.getElementById("gameCanvas");
+canvas.width = 500; // Cambiado de 600 a 500
+canvas.height = 500; // Cambiado de 600 a 500
 const ctx = canvas.getContext("2d");
 
 canvas.style.border = "3px solid black";
 
+let username = '';
+let gameState = 'start'; // 'start', 'countdown', 'playing', 'ended'
+
 // Configuración inicial de las variables
 const player = {
-    x: 120,
-    y: 450,
+    x: 200, // Cambiado de 120 a 200 para que aparezca dentro del canvas
+    y: 200, // Cambiado de 450 a 200 para que aparezca dentro del canvas
     width: 100,
     height: 100,
     headImage: new Image(),
@@ -42,7 +47,7 @@ food.image.src = foodImages[Math.floor(Math.random() * foodImages.length)];
 
 let imagesLoaded = 0;
 let score = 0;
-let countdown = 60; // Tiempo inicial del temporizador
+let countdown = 0; // Cambiado a 0 inicialmente
 let gameActive = true; // Variable para controlar el estado del juego
 
 // Función para verificar si todas las imágenes se han cargado
@@ -58,13 +63,74 @@ player.headImage.onload = checkImagesLoaded;
 player.bodyImage.onload = checkImagesLoaded;
 food.image.onload = checkImagesLoaded;
 
+// Manejo del formulario de inicio
+document.getElementById('startForm').addEventListener('submit', function(e) {
+    e.preventDefault();
+    username = document.getElementById('username').value;
+    if (username.trim() !== '') {
+        gameState = 'countdown';
+        document.getElementById('startScreen').style.display = 'none';
+        document.getElementById('countdownScreen').style.display = 'block';
+        startInitialCountdown();
+    }
+});
+
+function startInitialCountdown(isReset = false) {
+    document.getElementById('gameCanvas').style.display = 'none';
+    document.getElementById('countdownScreen').style.display = 'block';
+    document.getElementById('startScreen').style.display = 'none';
+    document.getElementById('gameInfoPanel').style.display = 'none';
+    document.getElementById('gameRankingPanel').style.display = 'none';
+    
+    let count = 3;
+    const countdownElement = document.getElementById('countdown');
+    countdownElement.textContent = count;
+    
+    const countInterval = setInterval(() => {
+        count--;
+        countdownElement.textContent = count;
+        
+        if (count <= 0) {
+            clearInterval(countInterval);
+            document.getElementById('countdownScreen').style.display = 'none';
+            document.getElementById('gameCanvas').style.display = 'block';
+            startGame();
+        }
+    }, 1000);
+}
+
+function startGame() {
+    // Limpiar intervalo anterior si existe
+    if (window.gameInterval) {
+        clearInterval(window.gameInterval);
+    }
+
+    // Reiniciar variables del juego
+    gameActive = true;
+    countdown = 60;
+    score = 0;
+    player.x = 200; // Cambiado de 120 a 200 para que aparezca dentro del canvas
+    player.y = 200; // Cambiado de 450 a 200 para que aparezca dentro del canvas
+    relocateFood();
+
+    document.getElementById('gameInfoPanel').style.display = 'flex';
+    document.getElementById('gameRankingPanel').style.display = 'block';
+    document.getElementById('playerNameDisplay').textContent = username;
+
+    // Iniciar el bucle principal si todas las imágenes están listas
+    if (imagesLoaded === 3) {
+        principal();
+        window.gameInterval = setInterval(gameLoop, 1000 / 60);
+    }
+}
+
 // Bucle principal
 function principal() {
     ctx.clearRect(0, 0, canvas.width, canvas.height); // Limpiar el canvas
     drawPlayer(ctx); // Dibujar al jugador
     food.draw(ctx); // Dibujar la comida
-    drawClockDigits(ctx); // Dibujar los dígitos del reloj
-    drawScore(ctx); // Dibujar la puntuación
+    drawClockDigits(); // Dibujar los dígitos del reloj
+    drawScore(); // Dibujar la puntuación
 
     checkCollision(); // Verificar colisiones
 
@@ -124,31 +190,66 @@ function relocateFood() {
 }
 
 // Función para actualizar el temporizador
+function backToStart() {
+    gameActive = false;
+    document.getElementById('gameCanvas').style.display = 'none';
+    document.getElementById('gameInfoPanel').style.display = 'none';
+    document.getElementById('gameRankingPanel').style.display = 'none';
+    document.getElementById('startScreen').style.display = 'flex'; // Asegurarse de que el diseño sea flex
+    document.getElementById('username').value = '';
+    score = 0;
+    countdown = 0; // Asegurarnos que vuelve a 0
+    gameState = 'start'; // Agregar esta línea para controlar el estado
+    
+    // Limpiar cualquier intervalo existente
+    if (window.gameInterval) {
+        clearInterval(window.gameInterval);
+    }
+}
+
 function updateClock() {
     if (countdown > 0) {
-        countdown -= 1 / 60; // Decrementar el temporizador
+        countdown -= 1 / 60;
     } else {
         if (gameActive) {
-            alert("¡Tiempo agotado!");
-            gameActive = false; // Cambiar el estado del juego a inactivo
+            gameActive = false;
+            Swal.fire({
+                title: '¡Tiempo agotado!',
+                text: `${username}, tu puntuación final es: ${score}`,
+                icon: 'info',
+                showCancelButton: true,
+                confirmButtonText: 'Reintentar',
+                cancelButtonText: 'Cerrar',
+                allowOutsideClick: false
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    startInitialCountdown(true);
+                } else {
+                    backToStart();
+                }
+            });
         }
     }
 }
 
 // Función para dibujar los dígitos del reloj
-function drawClockDigits(ctx) {
-    const digits = String(Math.floor(countdown)).padStart(2, "0"); // Asegurarse de que el temporizador tenga dos dígitos
+function drawClockDigits() {
+    const timerDisplay = document.getElementById('timerDisplay');
+    timerDisplay.innerHTML = ''; // Limpiar el contenedor
+    const digits = String(Math.ceil(countdown)).padStart(2, "0");
+    
     for (let i = 0; i < digits.length; i++) {
         const digit = parseInt(digits[i]);
-        ctx.drawImage(clockDigits[digit].image, 10 + i * 20, 10, 20, 30); // Ajustar tamaño según sea necesario
+        const img = new Image();
+        img.src = clockImages[digit];
+        img.className = 'clock-digit';
+        timerDisplay.appendChild(img);
     }
 }
 
 // Función para dibujar la puntuación
-function drawScore(ctx) {
-    ctx.fillStyle = "black"; // Color de la fuente
-    ctx.font = "30px Arial"; // Estilo de la fuente
-    ctx.fillText("Puntuación: " + score, 10, 70); // Dibujar la puntuación en la pantalla
+function drawScore() {
+    document.getElementById('scoreDisplay').textContent = score;
 }
 
 // Inicializar los dígitos del reloj
@@ -173,6 +274,3 @@ function gameLoop() {
         principal(); // Llamar al bucle principal
     }
 }
-
-// Iniciar el bucle principal
-setInterval(gameLoop, 1000 / 60); // 60 FPS
