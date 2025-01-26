@@ -8,9 +8,8 @@ const ctx = canvas.getContext("2d");
 canvas.style.border = "3px solid black";
 
 let username = "";
-let gameState = "start"; // 'start', 'countdown', 'playing', 'ended'
+let gameState = "start"; 
 
-// Configuración inicial de las variables
 const player = {
   x: 200, // Cambiado de 120 a 200 para que aparezca dentro del canvas
   y: 200, // Cambiado de 450 a 200 para que aparezca dentro del canvas
@@ -60,6 +59,8 @@ const keysPressed = {
   ArrowRight: false
 };
 
+// Añadir objeto de sonido para la colisión
+const eatSound = new Audio('Resources/eat.mp3');
 
 // Función para verificar si todas las imágenes se han cargado
 function checkImagesLoaded() {
@@ -234,6 +235,7 @@ function checkCollision() {
     player.y + player.height > food.y
   ) {
     score++; // Incrementar la puntuación
+    eatSound.play(); // Reproducir sonido al comer
     relocateFood(); // Reubicar la comida
   }
 }
