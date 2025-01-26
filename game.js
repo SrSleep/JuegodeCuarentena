@@ -21,30 +21,36 @@ const player = {
 player.headImage.src = "Resources/player.gif"; // Cabeza del jugador
 player.bodyImage.src = "Resources/homen1.gif"; // Cuerpo del jugador
 
-const foodImages = [
-  "Resources/cupcake.gif",
-  "Resources/donut.gif",
-  "Resources/hamburguer.gif",
-  "Resources/helado.gif",
-  "Resources/hotdog.gif",
-  "Resources/pizza.gif",
+const foodTypes = [
+  { src: "Resources/cupcake.gif", points: 1 },
+  { src: "Resources/donut.gif", points: 2 },
+  { src: "Resources/helado.gif", points: 3 },
+  { src: "Resources/hotdog.gif", points: 4 },
+  { src: "Resources/pizza.gif", points: 5 },
+  { src: "Resources/hamburguer.gif", points: 6 }
 ];
 
-const food = {
+// Reemplazar la constante food por un array de comidas
+const foods = foodTypes.map(type => ({
   x: Math.random() * (canvas.width - 40),
   y: Math.random() * (canvas.height - 40),
   width: 40,
   height: 40,
+  points: type.points,
   image: new Image(),
   isVisible: true,
-  draw: function (ctx) {
+  draw: function(ctx) {
     if (this.isVisible && this.image.complete) {
       ctx.drawImage(this.image, this.x, this.y, this.width, this.height);
     }
-  },
-};
+  }
+}));
 
-food.image.src = foodImages[Math.floor(Math.random() * foodImages.length)];
+// Inicializar las imágenes de comida
+foods.forEach((food, index) => {
+  food.image.src = foodTypes[index].src;
+  food.image.onload = checkImagesLoaded;
+});
 
 let imagesLoaded = 0;
 let score = 0;
@@ -65,7 +71,7 @@ const backgroundMusic = new Audio('Resources/Cuarentena.wav');// Sonido para la 
 // Función para verificar si todas las imágenes se han cargado
 function checkImagesLoaded() {
   imagesLoaded++;
-  if (imagesLoaded === 3) {
+  if (imagesLoaded === (2 + foods.length)) { // 2 imágenes del jugador + todas las comidas
     principal(); // Iniciar el bucle principal si todas las imágenes están listas
   }
 }
@@ -73,7 +79,6 @@ function checkImagesLoaded() {
 // Asignar el evento onload para las imágenes
 player.headImage.onload = checkImagesLoaded;
 player.bodyImage.onload = checkImagesLoaded;
-food.image.onload = checkImagesLoaded;
 
 // Obtener el ranking al cargar la página
 window.addEventListener("load", fetchRanking);
@@ -149,11 +154,15 @@ function startGame() {
     keysPressed[key] = false;
   });
 
-  relocateFood();
+  // Reemplazar la parte de reubicar comidas con:
+  showNewFoodPair();
 
   document.getElementById("gameInfoPanel").style.display = "flex";
   document.getElementById("gameRankingPanel").style.display = "block";
   document.getElementById("playerNameDisplay").textContent = username;
+
+  // Agregar esta línea para mostrar la guía de puntajes
+  createFoodScoreGuide();
 
   // Iniciar los intervalos del juego
   window.gameInterval = setInterval(gameLoop, 1000 / 60);
@@ -166,6 +175,36 @@ function startGame() {
   
   // Asegurar que el bucle principal se ejecute
   requestAnimationFrame(principal);
+}
+
+// Función para crear y mostrar la guía de puntajes
+function createFoodScoreGuide() {
+  const guideContainer = document.getElementById('foodScoreGuide');
+  const listContainer = guideContainer.querySelector('.food-score-list');
+  
+  listContainer.innerHTML = '';
+  
+  const sortedFoods = [...foodTypes].sort((a, b) => b.points - a.points);
+  
+  sortedFoods.forEach(food => {
+    const item = document.createElement('div');
+    item.className = 'food-score-item';
+    
+    const img = document.createElement('img');
+    img.src = food.src;
+    img.alt = `${food.points} puntos`;
+    
+    const points = document.createElement('span');
+    points.textContent = `+${food.points}`;
+    points.style.color = '#27ae60';
+    points.style.fontWeight = '600';
+    
+    item.appendChild(img);
+    item.appendChild(points);
+    listContainer.appendChild(item);
+  });
+  
+  guideContainer.style.display = 'block';
 }
 
 // Función para actualizar el cuerpo del jugador
@@ -186,7 +225,7 @@ function updatePlayerBody() {
 function principal() {
   ctx.clearRect(0, 0, canvas.width, canvas.height); // Limpiar el canvas
   drawPlayer(ctx); // Dibujar al jugador
-  food.draw(ctx); // Dibujar la comida
+  foods.forEach(food => food.draw(ctx)); // Dibujar todas las comidas
   drawClockDigits(); // Dibujar los dígitos del reloj
   drawScore(); // Dibujar la puntuación
 
@@ -269,30 +308,82 @@ window.addEventListener("keyup", (event) => {
   }
 });
 
-// Función para verificar colisiones
+// Modificar la función checkCollision
 function checkCollision() {
-  if (
-    player.x < food.x + food.width &&
-    player.x + player.width > food.x &&
-    player.y < food.y + food.height &&
-    player.y + player.height > food.y
-  ) {
-    score++; // Incrementar la puntuación
-    eatSound.play(); // Reproducir sonido al comer
-    relocateFood(); // Reubicar la comida
-    player.headImage.src = "Resources/player2.gif";   // Cambiar la imagen de la cabeza temporalmente
-    setTimeout(() => {  // Volver a la imagen original 
-      player.headImage.src = "Resources/player.gif"; 
-    }, 1000); 
+  let collision = false;
+  
+  foods.forEach(food => {
+    if (food.isVisible &&
+        player.x < food.x + food.width &&
+        player.x + player.width > food.x &&
+        player.y < food.y + food.height &&
+        player.y + player.height > food.y) {
+      
+      score += food.points;
+      eatSound.play();
+      
+      // Mostrar indicador de puntos
+      showPointsIndicator(food.points);
+      
+      // Hacer invisible todas las comidas y mostrar un nuevo par
+      showNewFoodPair();
+      collision = true;
+      
+      player.headImage.src = "Resources/player2.gif";
+      setTimeout(() => {
+        player.headImage.src = "Resources/player.gif";
+      }, 1000);
 
-    updatePlayerBody();  // Actualiza el cuerpo del jugador según el puntaje
-  }
+      updatePlayerBody();
+    }
+  });
+  
+  return collision;
 }
 
-// Función para reubicar la comida
-function relocateFood() {
-  food.x = Math.random() * (canvas.width - food.width);
-  food.y = Math.random() * (canvas.height - food.height);
+// Agregar función para mostrar indicador de puntos
+function showPointsIndicator(points) {
+  const scoreDisplay = document.getElementById("scoreDisplay");
+  const indicator = document.createElement("div");
+  indicator.className = "points-indicator";
+  indicator.textContent = `+${points}`;
+  
+  const rect = scoreDisplay.getBoundingClientRect();
+  indicator.style.left = `${rect.right + 10}px`;
+  indicator.style.top = `${rect.top}px`;
+  
+  document.body.appendChild(indicator);
+  
+  void indicator.offsetWidth;
+  
+  indicator.classList.add("show");
+  
+  // Aumentar el tiempo antes de eliminar el indicador de 500ms a 1000ms
+  setTimeout(() => {
+    document.body.removeChild(indicator);
+  }, 1000);
+}
+
+// Modificar la función relocateFood para mostrar 2 nuevas comidas aleatorias
+function showNewFoodPair() {
+  // Hacer todas las comidas invisibles
+  foods.forEach(food => food.isVisible = false);
+  
+  // Seleccionar 2 comidas aleatorias diferentes
+  const availableFoods = [...foods];
+  const food1 = availableFoods.splice(Math.floor(Math.random() * availableFoods.length), 1)[0];
+  const food2 = availableFoods[Math.floor(Math.random() * availableFoods.length)];
+  
+  // Hacer visibles las comidas seleccionadas y reubicarlas
+  food1.isVisible = true;
+  food2.isVisible = true;
+  
+  // Ubicar las comidas en lados opuestos del canvas
+  food1.x = Math.random() * (canvas.width/2 - food1.width);
+  food1.y = Math.random() * (canvas.height - food1.height);
+  
+  food2.x = (canvas.width/2) + Math.random() * (canvas.width/2 - food2.width);
+  food2.y = Math.random() * (canvas.height - food2.height);
 }
 
 // Función para actualizar el temporizador
