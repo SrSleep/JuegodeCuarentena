@@ -92,6 +92,16 @@ document.getElementById("startForm").addEventListener("submit", function (e) {
 });
 
 function startInitialCountdown(isReset = false) {
+  // Limpiar todos los intervalos existentes
+  if (window.gameInterval) {
+    clearInterval(window.gameInterval);
+    window.gameInterval = null;
+  }
+  if (window.clockInterval) {
+    clearInterval(window.clockInterval);
+    window.clockInterval = null;
+  }
+  
   document.getElementById("gameCanvas").style.display = "none";
   document.getElementById("countdownScreen").style.display = "block";
   document.getElementById("startScreen").style.display = "none";
@@ -119,29 +129,43 @@ function startGame() {
   // Limpiar intervalos anteriores
   if (window.gameInterval) {
     clearInterval(window.gameInterval);
+    window.gameInterval = null;
   }
   if (window.clockInterval) {
     clearInterval(window.clockInterval);
+    window.clockInterval = null;
   }
+
+  // Reiniciar variables de estado
   gameActive = true;
   countdown = 60;
   score = 0;
   player.x = 200; 
   player.y = 200;
-  player.bodyImage.src = "Resources/homen1.gif";  // Cuerpo inicial
+  player.bodyImage.src = "Resources/homen1.gif";
+  
+  // Limpiar estado de teclas
+  Object.keys(keysPressed).forEach(key => {
+    keysPressed[key] = false;
+  });
+
   relocateFood();
 
   document.getElementById("gameInfoPanel").style.display = "flex";
   document.getElementById("gameRankingPanel").style.display = "block";
   document.getElementById("playerNameDisplay").textContent = username;
 
-  // Iniciar el juego
-  if (imagesLoaded === 3) {
-    window.gameInterval = setInterval(gameLoop, 1000 / 60);  // FPS para el juego
-    window.clockInterval = setInterval(updateClock, 1000);    // Actualizar reloj cada 1 segundo
-  }
-  backgroundMusic.loop = true; // Reproducir en bucle
+  // Iniciar los intervalos del juego
+  window.gameInterval = setInterval(gameLoop, 1000 / 60);
+  window.clockInterval = setInterval(updateClock, 1000);
+  
+  // Reiniciar y reproducir música
+  backgroundMusic.currentTime = 0;
+  backgroundMusic.loop = true;
   backgroundMusic.play();
+  
+  // Asegurar que el bucle principal se ejecute
+  requestAnimationFrame(principal);
 }
 
 // Función para actualizar el cuerpo del jugador
