@@ -239,6 +239,10 @@ function checkCollision() {
     score++; // Incrementar la puntuación
     eatSound.play(); // Reproducir sonido al comer
     relocateFood(); // Reubicar la comida
+    player.headImage.src = "Resources/player2.gif";   // Cambiar la imagen de la cabeza temporalmente
+    setTimeout(() => {  // Volver a la imagen original después de 4 milisegundos
+      player.headImage.src = "Resources/player.gif"; 
+    }, 1000); 
   }
 }
 
