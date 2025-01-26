@@ -123,13 +123,12 @@ function startGame() {
   if (window.clockInterval) {
     clearInterval(window.clockInterval);
   }
-
-  // Reiniciar variables del juego
   gameActive = true;
   countdown = 60;
   score = 0;
   player.x = 200; 
   player.y = 200;
+  player.bodyImage.src = "Resources/homen1.gif";  // Cuerpo inicial
   relocateFood();
 
   document.getElementById("gameInfoPanel").style.display = "flex";
@@ -143,6 +142,19 @@ function startGame() {
   }
   backgroundMusic.loop = true; // Reproducir en bucle
   backgroundMusic.play();
+}
+
+// Función para actualizar el cuerpo del jugador
+function updatePlayerBody() {
+  if (score >= 30) {
+    player.bodyImage.src = "Resources/homen4.gif"; 
+  } else if (score >= 20) {
+    player.bodyImage.src = "Resources/homen3.gif"; 
+  } else if (score >= 10) {
+    player.bodyImage.src = "Resources/homen2.gif"; 
+  } else {
+    player.bodyImage.src = "Resources/homen1.gif"; 
+  }
 }
 
 
@@ -164,13 +176,17 @@ function principal() {
 // Función para dibujar al jugador
 function drawPlayer(ctx) {
   if (player.headImage.complete && player.bodyImage.complete) {
+    ctx.save();
+    // Voltear la imagen horizontalmente
+    ctx.scale(-1, 1); // Escalar en el eje X (invertir horizontalmente)
     ctx.drawImage(
       player.bodyImage,
-      player.x,
+      -player.x - player.width,  // Ajustar la posición para el volteo
       player.y,
       player.width,
       player.height
     );
+    ctx.restore();    // Restaurar el estado del contexto para no afectar otras imágenes
     const headWidth = player.width / 3;
     const headX = player.x + (player.width - headWidth) / 2; // Centrar la cabeza
     ctx.drawImage(
@@ -182,6 +198,7 @@ function drawPlayer(ctx) {
     );
   }
 }
+
 
 
 // Función para mover al jugador
@@ -240,9 +257,11 @@ function checkCollision() {
     eatSound.play(); // Reproducir sonido al comer
     relocateFood(); // Reubicar la comida
     player.headImage.src = "Resources/player2.gif";   // Cambiar la imagen de la cabeza temporalmente
-    setTimeout(() => {  // Volver a la imagen original después de 4 milisegundos
+    setTimeout(() => {  // Volver a la imagen original 
       player.headImage.src = "Resources/player.gif"; 
     }, 1000); 
+
+    updatePlayerBody();  // Actualiza el cuerpo del jugador según el puntaje
   }
 }
 
