@@ -2,6 +2,8 @@
 
 ¡Bienvenido al **Juego de la Cuarentena**! 🌟 Este es un juego interactivo desarrollado en **HTML5** y **JavaScript**, diseñado para jugarse directamente en el navegador. 🚀
 
+Puedes acceder al juego desde el siguiente link: https://juego-cuarentena.web.app
+
 ## 📖 Descripción
 
 En este juego, controlas a un personaje 🧍 que debe recolectar comida 🍔🍕 mientras un temporizador ⏳ cuenta hacia cero. Cada vez que recojas comida, tu puntuación 🏆 aumentará y la apariencia del personaje cambiará dinámicamente. ¡Intenta conseguir la mayor cantidad de puntos antes de que se acabe el tiempo! 🎯
