@@ -59,8 +59,8 @@ const keysPressed = {
   ArrowRight: false
 };
 
-// Añadir objeto de sonido para la colisión
-const eatSound = new Audio('Resources/eat.mp3');
+const eatSound = new Audio('Resources/eat.mp3');// Sonido para la colisión
+const backgroundMusic = new Audio('Resources/Cuarentena.wav');// Sonido para la música de fondo
 
 // Función para verificar si todas las imágenes se han cargado
 function checkImagesLoaded() {
@@ -141,6 +141,8 @@ function startGame() {
     window.gameInterval = setInterval(gameLoop, 1000 / 60);  // FPS para el juego
     window.clockInterval = setInterval(updateClock, 1000);    // Actualizar reloj cada 1 segundo
   }
+  backgroundMusic.loop = true; // Reproducir en bucle
+  backgroundMusic.play();
 }
 
 
@@ -259,7 +261,8 @@ function updateClock() {
     if (gameActive) {
       gameActive = false;
       clearInterval(window.clockInterval); // Detener el reloj
-      // Mostrar la alerta de fin de tiempo
+      backgroundMusic.pause();     // Detener la música de fondo
+      backgroundMusic.currentTime = 0; // Reiniciar la música
       Swal.fire({
         title: "¡Tiempo agotado!",
         text: `${username}, tu puntuación final es: ${score}`,
