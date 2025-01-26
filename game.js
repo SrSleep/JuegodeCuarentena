@@ -115,7 +115,7 @@ function startInitialCountdown(isReset = false) {
 }
 
 function startGame() {
-  // Limpiar intervalo anterior si existe
+  // Limpiar intervalos anteriores
   if (window.gameInterval) {
     clearInterval(window.gameInterval);
   }
@@ -127,21 +127,21 @@ function startGame() {
   gameActive = true;
   countdown = 60;
   score = 0;
-  player.x = 200; // Cambiado de 120 a 200 para que aparezca dentro del canvas
-  player.y = 200; // Cambiado de 450 a 200 para que aparezca dentro del canvas
+  player.x = 200; 
+  player.y = 200;
   relocateFood();
 
   document.getElementById("gameInfoPanel").style.display = "flex";
   document.getElementById("gameRankingPanel").style.display = "block";
   document.getElementById("playerNameDisplay").textContent = username;
 
-  // Iniciar el bucle principal si todas las imágenes están listas
+  // Iniciar el juego
   if (imagesLoaded === 3) {
-    principal();
-    window.gameInterval = setInterval(gameLoop, 1000 / 60);
-    window.clockInterval = setInterval(updateClock, 1000); // Actualizar el temporizador cada segundo
+    window.gameInterval = setInterval(gameLoop, 1000 / 60);  // FPS para el juego
+    window.clockInterval = setInterval(updateClock, 1000);    // Actualizar reloj cada 1 segundo
   }
 }
+
 
 // Bucle principal
 function principal() {
@@ -252,11 +252,12 @@ async function backToStart() {
 
 function updateClock() {
   if (countdown > 0) {
-    countdown -= 1; // Decrementar cada segundo
+    countdown--;  // Decrementar el temporizador
   } else {
     if (gameActive) {
       gameActive = false;
-      clearInterval(window.clockInterval); // Limpiar el intervalo del temporizador
+      clearInterval(window.clockInterval); // Detener el reloj
+      // Mostrar la alerta de fin de tiempo
       Swal.fire({
         title: "¡Tiempo agotado!",
         text: `${username}, tu puntuación final es: ${score}`,
@@ -274,7 +275,9 @@ function updateClock() {
       });
     }
   }
+  drawClockDigits(); // Actualizar la visualización del reloj
 }
+
 
 // Función para dibujar los dígitos del reloj
 function drawClockDigits() {
@@ -320,9 +323,7 @@ for (let i = 0; i < 10; i++) {
 // Bucle principal del juego
 function gameLoop() {
   if (gameActive) {
-      updateClock(); // Actualizar el temporizador
-      movePlayer(); // Mover al jugador
-      principal(); // Llamar al bucle principal
+    movePlayer(); // Mover al jugador
+    principal();  // Actualizar la pantalla de juego
   }
 }
-
